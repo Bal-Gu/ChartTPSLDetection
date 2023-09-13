@@ -10,24 +10,13 @@ def extract_text_regions(image):
     # Define the region of interest (ROI) for the right side of the image (1/8th of the width)
     right_side = image[:, width - int(width/8):]
     # Apply inverse binarization (thresholding) to the right_side image
+
+
     gray_right_side = cv2.cvtColor(right_side, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite('gray_right_side.jpg', gray_right_side)
-    image = cv2.threshold(gray_right_side, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
+    canny = cv2.Canny(gray_right_side, 100, 200)
+    cv2.imwrite('gray_right_side2.jpg', canny)
+    text_data = pytesseract.image_to_data(canny, output_type=pytesseract.Output.DICT, config="--psm 6 digits")
 
-
-    # Save the result (grayscale image with black and white text) to a file
-    cv2.imwrite('black_white_text_mask.jpg', image)
-    # Perform OCR to extract text regions (numbers)
-    text_data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT,config="--psm 6 digits")
-
-    n_gray_right_side = cv2.cvtColor(right_side, cv2.COLOR_BGR2GRAY)
-    img = cv2.bitwise_not(n_gray_right_side)
-    cv2.imwrite('gray_right_side.jpg', img)
-    n_image = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
-    n_text_data = pytesseract.image_to_data(n_image, output_type=pytesseract.Output.DICT, config="--psm 6 digits")
-    for i in text_data:
-        for data in n_text_data[str(i)]:
-            text_data[str(i)].append(data)
     return text_data
 
 def detect_background_color(image):
