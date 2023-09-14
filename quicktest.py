@@ -47,14 +47,14 @@ def post_process_text_data(text_data):
             continue
         if str(text).count(".") > 1:
             split = str(text).split(".")
-            text = split[0] +"."+ split[1]
+            text = split[0] + "." + split[1]
         # Check if the text is a valid number (handles both integer and floating-point numbers)
         if str(text).split(".")[0] == "":
             if i == 0:
-                next = i+1
+                next = i + 1
             else:
                 next = i - 1
-            text = (text_data["text"][next]).split(".")[0]+"." + str(text).split(".")[1]
+            text = (text_data["text"][next]).split(".")[0] + "." + str(text).split(".")[1]
         try:
             number = float(text)
         except ValueError:
@@ -77,10 +77,21 @@ def post_process_text_data(text_data):
         # Update the previous number and index
         prev_number = number
 
-
     return filtered_text_data
 
 
+def group_by_color(text_color):
+    group = []
+    for t, c in text_color:
+        for element in group:
+            for c_2 in element.keys():
+                print("{}\t{}".format(c_2,c))
+                if c_2[0] - 10 <= c[0] <= c_2[0] + 10 and c_2[1] - 10 <= c[1] <= c_2[
+                    1] + 10 and c_2[2] - 10 <= c[2] <= c_2[2] + 10:
+                    element[c_2].append(t)
+                    continue
+        group.append({c: [t]})
+    return group
 
 def get_text_region_colors(image, text_data):
     colors = []
@@ -91,14 +102,14 @@ def get_text_region_colors(image, text_data):
     for i in range(len(text_data['text'])):
         if cleaned_text[i] == 0:
             continue
-        min_top =text_data['top'][i]
+        min_top = text_data['top'][i]
         max_bottom = int(text_data['top'][i] + text_data['height'][i])
-        x1  = int(text_data["left"][i])
-        x2 = int(text_data["width"][i])+x1
+        x1 = int(text_data["left"][i])
+        x2 = int(text_data["width"][i]) + x1
         char = cleaned_text[i]
         y1 = max(min_top - 5, 0)
         y2 = min(max_bottom + 5, image.shape[0])
-        text_region = image[y1:y2, len(image[1])-x2:len(image[1])-x1]
+        text_region = image[y1:y2, len(image[1]) - x2:len(image[1]) - x1]
 
         # Detect the background color for the text region
         detected_color = detect_background_color(text_region)
@@ -115,6 +126,8 @@ text_data = extract_text_regions(image)
 
 # Get the detected background colors for each text region
 text_colors = get_text_region_colors(image, text_data)
+
+print(group_by_color(text_colors))
 
 print("Detected background colors for text regions on the right side:")
 for char, color in text_colors:
